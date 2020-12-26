@@ -1,7 +1,3 @@
-#https://livecodestream.dev/post/2020-05-21-python-flask-api-starter-kit-and-project-layout/
-# https://blog.ruanbekker.com/blog/2018/06/01/add-a-authentication-header-to-your-python-flask-app/
-# https://medium.com/excited-developers/file-upload-with-react-flask-e115e6f2bf99
-
 from flask import Flask, request, jsonify
 import os
 import subprocess
