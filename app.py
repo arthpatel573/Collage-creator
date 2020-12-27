@@ -42,7 +42,7 @@ def get_data(folder, video_id):
     img_data = np.asarray(img_data, dtype=np.float32) 
     return img_data
 
-def resnet50(input, layer_index):
+def get_resnet50_features(input, layer_index):
     '''
     Extract features from last layer of ResNet50 model
     Args:
@@ -133,7 +133,7 @@ def collage():
         extract_frames(file_name, video_id)
         img_data = get_data('data', video_id)
         # get output of the last layer
-        last_layer_out = resnet50(img_data, -1)
+        last_layer_out = get_resnet50_features(img_data, -1)
 
         pca = decomposition.PCA(n_components=3)
         pca.fit(last_layer_out)
