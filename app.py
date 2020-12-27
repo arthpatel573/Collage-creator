@@ -18,6 +18,18 @@ app = Flask(__name__)
 NUM_CLUSTERS = 4
 
 def get_data(folder, video_id):
+    '''
+    Get video frames data and transform it to required format
+    Args:
+        folder: frames location folder names
+            dtype: str
+        video_id: unique id corresponding to the video
+            dtype: str
+    
+    Returns:
+        img_data: Array of preprocessed video frames
+            dtype: ndarray
+    '''
     sorted(os.listdir(folder), key=len)
     img_data = []
     #loops through available image
@@ -31,6 +43,17 @@ def get_data(folder, video_id):
     return img_data
 
 def resnet50(input, layer_index):
+    '''
+    Extract features from last layer of ResNet50 model
+    Args:
+        input: Array of pixels values of the frames
+            dtype: ndarray
+        layer_index: index of layer for extracting features
+            dtype: int
+    Returns:
+        layer_out: Output from resnet50 model's specified layer
+            dtype: ndarray
+    '''
     # use pretrained Resnet50 from keras
     model = tf.keras.applications.ResNet50(include_top=False, weights="imagenet", input_shape=(224,224,3))
     # freeze the layer
