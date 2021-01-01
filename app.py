@@ -11,6 +11,8 @@ from sklearn import decomposition
 import tensorflow as tf
 import tensorflow_hub as hub
 import numpy as np
+from skimage import transform
+from skimage import io
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -124,6 +126,58 @@ def extract_frames(file_name, video_id):
         print('Video seems missing')
         return None
 
+def bound_blur(image, b):
+    '''
+    Blur the boundaries before putting them into the collage
+    '''
+    h, w, d = image.shape
+    output = np.zeros([h, w, d])
+    for i in range(h):
+        for j in range(w):
+            output[i, j, 0:d] = image[i, j, 0:d] * min(min(i, h - i) / b, 1) * min(min(j, w - j) / b, 1)
+    return output
+
+
+def bound_recover(image, b):
+    '''
+    Recover the collage's boundary after merged
+    '''
+    h, w, d = image.shape
+    output = np.zeros([h, w, d])
+    b_half = int(b / 2)
+    for i in range(h):
+        for j in range(w):
+            output[i, j, 0:d] = image[i, j, 0:d] * max(b / min(i + b_half, h - i + b_half), 1) * max(
+                b / min(j + b_half, w - j + b_half), 1)
+    return output
+
+def image_merge(images, b, vertical, horizontal):
+    '''
+    Calculate the pixels and positions of collage
+    '''
+    n, h, w, d = images.shape
+    output = np.zeros([480, 640, d])
+    ver = int(vertical * 480)
+    hor = int(horizontal * 640)
+    assert n == 4, 'image numbers do not match'
+    assert b % 2 == 0, 'Bound should be an even number'
+    b_half = int(b / 2)
+
+    # transform the original picture into particular size and blur them
+    blur_1 = bound_blur(transform.resize(images[0], (ver + b, hor + b, d)), b)
+    blur_2 = bound_blur(transform.resize(images[1], (480 - ver + b, hor + b, d)), b)
+    blur_3 = bound_blur(transform.resize(images[2], (ver + b, 640 - hor + b, d)), b)
+    blur_4 = bound_blur(transform.resize(images[3], (480 - ver + b, 640 - hor + b, d)), b)
+
+    # put them together into one 640*480 image
+    output[0:ver + b_half, 0:hor + b_half, 0:d] += blur_1[b_half:ver + b, b_half:hor + b, 0:d]
+    output[ver - b_half:480, 0:hor + b_half, 0:d] += blur_2[0:480 - ver + b_half, b_half:hor + b, 0:d]
+    output[0:ver + b_half, hor - b_half:640, 0:d] += blur_3[b_half:ver + b, 0:640 - hor + b_half, 0:d]
+    output[ver - b_half:480, hor - b_half:640, 0:d] += blur_4[0:480 - ver + b_half, 0:640 - hor + b_half, 0:d]
+
+    return bound_recover(output, b)
+
+
 @app.route('/', methods=['POST'])
 def collage():
     '''
@@ -156,9 +210,18 @@ def collage():
         kmeans = KMeans(n_clusters=4, random_state=7).fit(data)
 
         # get indices of important frames of the video
-        closest_points = get_closest_points(data, kmeans.cluster_centers_, kmeans.labels_)
+        image_list = get_closest_points(data, kmeans.cluster_centers_, kmeans.labels_)
 
-        return jsonify({"message": "OK: Important frames are "+ str(closest_points)}), 200
+        # create collage from important frames
+        image_full_list = []
+        for i in image_list:
+            image_full_list.append(os.path.join('data',video_id + '_' +str(i) + '.jpg'))
+        imageCollection = io.ImageCollection(image_full_list)
+        collage = (image_merge(np.array(list(x for x in imageCollection)), 60, 0.5, 0.5) * 255).astype('uint8')
+        # save the collage as merged.jpg
+        io.imsave('collage.jpg', collage)
+
+        return jsonify({"message": "OK: Collage saved successfully"}), 200
     else:
         return jsonify({"message": "ERROR: Unauthorized"}), 401
 
