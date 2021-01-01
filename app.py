@@ -12,6 +12,8 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import numpy as np
 
+from dotenv import load_dotenv
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -124,24 +126,36 @@ def extract_frames(file_name, video_id):
 
 @app.route('/', methods=['POST'])
 def collage():
+    '''
+    Create collage from key important frames
+    '''
     headers = request.headers
     auth = headers.get("API-Key")
-    if auth == 'asoidewfoef':
+
+    # Authentication
+    if auth == os.getenv('API-Key', ''):
         request_body = request.get_json(force=True)
+
+        # get file name
         file_name =  request_body['file_name']
         video_id = str(uuid.uuid4())
+        
+        # extract frames from the video
         extract_frames(file_name, video_id)
         img_data = get_data('data', video_id)
+
         # get output of the last layer
         last_layer_out = get_resnet50_features(img_data, -1)
 
+        # Dimentionality reduction to 3 components
         pca = decomposition.PCA(n_components=3)
         pca.fit(last_layer_out)
-
         data = pca.transform(last_layer_out)
 
+        # apply kmeans clustering
         kmeans = KMeans(n_clusters=4, random_state=7).fit(data)
 
+        # get indices of important frames of the video
         closest_points = get_closest_points(data, kmeans.cluster_centers_, kmeans.labels_)
 
         return jsonify({"message": "OK: Important frames are "+ str(closest_points)}), 200
