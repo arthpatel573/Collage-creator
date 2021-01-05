@@ -218,8 +218,11 @@ def collage():
             image_full_list.append(os.path.join('data',video_id + '_' +str(i) + '.jpg'))
         imageCollection = io.ImageCollection(image_full_list)
         collage = (image_merge(np.array(list(x for x in imageCollection)), 60, 0.5, 0.5) * 255).astype('uint8')
+        
+        output_file = video_id+"_collage.jpg"
+        
         # save the collage as merged.jpg
-        io.imsave('collage.jpg', collage)
+        io.imsave(output_file, collage)
 
         return jsonify({"message": "OK: Collage saved successfully"}), 200
     else:
