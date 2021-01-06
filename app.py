@@ -13,6 +13,7 @@ import tensorflow_hub as hub
 import numpy as np
 from skimage import transform
 from skimage import io
+import time
 
 from dotenv import load_dotenv
 
@@ -22,6 +23,12 @@ app = Flask(__name__)
 
 NUM_CLUSTERS = 4
 
+# use pretrained Resnet50 from keras
+MODEL = tf.keras.applications.ResNet50(
+    include_top = False, weights = "imagenet", input_shape = (224, 224, 3)
+)
+# freeze the layer
+MODEL.trainable = False
 
 def get_data(folder, video_id):
     """
@@ -61,17 +68,10 @@ def get_resnet50_features(input, layer_index):
         layer_out: Output from resnet50 model's specified layer
             dtype: ndarray
     """
-    # use pretrained Resnet50 from keras
-    model = tf.keras.applications.ResNet50(
-        include_top=False, weights="imagenet", input_shape=(224, 224, 3)
-    )
-    # freeze the layer
-    model.trainable = False
-
     # get features from output layer
     feature_extractor = tf.keras.Model(
-        inputs=model.inputs,
-        outputs=[layer.output for layer in model.layers],  # call layer output
+        inputs = MODEL.inputs,
+        outputs = [layer.output for layer in MODEL.layers],  # call layer output
     )
 
     # extract feature from our dataset
