@@ -179,13 +179,19 @@ def image_merge(images, b, vertical, horizontal):
     assert b % 2 == 0, "Bound should be an even number"
     b_half = int(b / 2)
 
-    # transform the original picture into particular size and blur them
-    blur_1 = bound_blur(transform.resize(images[0], (ver + b, hor + b, d)), b)
-    blur_2 = bound_blur(transform.resize(images[1], (480 - ver + b, hor + b, d)), b)
-    blur_3 = bound_blur(transform.resize(images[2], (ver + b, 640 - hor + b, d)), b)
-    blur_4 = bound_blur(
-        transform.resize(images[3], (480 - ver + b, 640 - hor + b, d)), b
-    )
+    # transform the original pictures
+    transformed_img = []
+
+    transformed_img.append(transform.resize(images[0], (ver + b, hor + b, d)))
+    transformed_img.append(transform.resize(images[1], (480 - ver + b, hor + b, d)))
+    transformed_img.append(transform.resize(images[2], (ver + b, 640 - hor + b, d)))
+    transformed_img.append(transform.resize(images[3], (480 - ver + b, 640 - hor + b, d)))
+
+    # blur the tranformed images
+    blur_1 = bound_blur(transformed_img[0], b)
+    blur_2 = bound_blur(transformed_img[1], b)
+    blur_3 = bound_blur(transformed_img[2], b)
+    blur_4 = bound_blur(transformed_img[3], b)
 
     # put them together into one 640*480 image
     output[0 : ver + b_half, 0 : hor + b_half, 0:d] += blur_1[
