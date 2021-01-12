@@ -2,6 +2,10 @@ from flask import Flask
 import os
 from api.routes.collage import collage_api
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 def create_app():
     app = Flask(__name__)
 

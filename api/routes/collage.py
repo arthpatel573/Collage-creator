@@ -15,9 +15,6 @@ from skimage import transform
 from skimage import io
 import time
 
-from dotenv import load_dotenv
-
-load_dotenv()
 
 NUM_CLUSTERS = 4
 
