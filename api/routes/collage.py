@@ -32,7 +32,7 @@ MODEL.trainable = False
 collage_api = Blueprint("collage", __name__)
 
 
-def get_data(folder, video_id):
+def get_data(folder, video_id, *args):
     """
     Get video frames data and transform it to required format
     Args:
@@ -58,7 +58,7 @@ def get_data(folder, video_id):
     return img_data
 
 
-def get_resnet50_features(input, layer_index):
+def get_resnet50_features(input, layer_index, *args):
     """
     Extract features from last layer of ResNet50 model
     Args:
@@ -85,7 +85,7 @@ def get_resnet50_features(input, layer_index):
     return layer_out
 
 
-def get_closest_points(data, centroid, assigned_points):
+def get_closest_points(data, centroid, assigned_points, *args):
     """
     Args:
         centroid: list of centroid
@@ -112,7 +112,7 @@ def get_closest_points(data, centroid, assigned_points):
     return closest_list
 
 
-def extract_frames(file_name, video_id):
+def extract_frames(file_name, video_id, *args):
     """
     Extract video frames and randomly selects 5 frames index
     to create collage
@@ -138,7 +138,7 @@ def extract_frames(file_name, video_id):
         return None
 
 
-def bound_blur(image, b):
+def bound_blur(image, b, *args):
     """
     Blur the boundaries before putting them into the collage
     """
@@ -152,7 +152,7 @@ def bound_blur(image, b):
     return output
 
 
-def bound_recover(image, b):
+def bound_recover(image, b, *args):
     """
     Recover the collage's boundary after merged
     """
@@ -169,7 +169,7 @@ def bound_recover(image, b):
     return output
 
 
-def image_merge(images, b, vertical, horizontal):
+def image_merge(images, b, vertical, horizontal, *args):
     """
     Calculate the pixels and positions of collage
     """
