@@ -29,6 +29,13 @@ python main.py
 
 This API will run at port 5000. 
 
+Alternatively, you can build the docker container image and run the docker container.
+
+```
+docker build -t collage-creator .
+docker run -dp 5000:5000 collage-creator
+```
+
 ### Request format:
 ```
 {
